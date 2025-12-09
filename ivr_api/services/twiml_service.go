@@ -156,9 +156,9 @@ func (g *TwiMLGenerator) buildMenuFromActions(actions []models.IVRAction) string
 	var menuParts []string
 	for i, action := range actions {
 		var actionDesc string
-		log.Printf("Action %d: Type=%s, Input=%s, Message='%s', Phone=%s", 
+		log.Printf("Action %d: Type=%s, Input=%s, Message='%s', Phone=%s",
 			i+1, action.ActionType, action.ActionInput, action.Message, action.ForwardPhone)
-		
+
 		if action.ActionType == "forward" {
 			// Use custom message if provided, otherwise use default
 			if action.Message != "" && strings.TrimSpace(action.Message) != "" {
