@@ -28,6 +28,22 @@ func (h *CampaignHandler) CreateCampaign(c *gin.Context) {
 		return
 	}
 
+	// Validate required fields
+	if campaign.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Campaign name is required"})
+		return
+	}
+
+	if campaign.Description == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Description is required"})
+		return
+	}
+
+	if campaign.IntroText == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Intro text is required"})
+		return
+	}
+
 	// Set timestamps
 	campaign.CreatedAt = time.Now()
 	campaign.UpdatedAt = time.Now()
@@ -35,6 +51,11 @@ func (h *CampaignHandler) CreateCampaign(c *gin.Context) {
 	// Set defaults
 	if campaign.Language == "" {
 		campaign.Language = "en"
+	}
+
+	// Initialize actions array if nil
+	if campaign.Actions == nil {
+		campaign.Actions = []models.IVRAction{}
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

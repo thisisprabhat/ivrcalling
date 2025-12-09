@@ -6,12 +6,22 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// IVRAction represents an action in the IVR flow
+type IVRAction struct {
+	ActionType   string `bson:"action_type" json:"action_type"`                         // "information" or "forward"
+	ActionInput  string `bson:"action_input" json:"action_input"`                       // key press (e.g., "1", "2", "3")
+	Message      string `bson:"message,omitempty" json:"message,omitempty"`             // text or URL for information type
+	ForwardPhone string `bson:"forward_phone,omitempty" json:"forward_phone,omitempty"` // phone number for forward type
+}
+
 // Campaign represents a marketing campaign
 type Campaign struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	Name        string             `bson:"name" json:"name"`
 	Description string             `bson:"description" json:"description"`
 	Language    string             `bson:"language" json:"language"`
+	IntroText   string             `bson:"intro_text" json:"intro_text"`               // Intro text played at start
+	Actions     []IVRAction        `bson:"actions,omitempty" json:"actions,omitempty"` // IVR actions
 	IsActive    bool               `bson:"is_active" json:"is_active"`
 	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt   time.Time          `bson:"updated_at" json:"updated_at"`

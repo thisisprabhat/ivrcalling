@@ -5,7 +5,9 @@ A complete IVR (Interactive Voice Response) calling system with a Go backend API
 ## 🚀 Features
 
 ### Backend (Go + Gin + MongoDB)
+
 - **Campaign Management**: Create, update, delete, and list marketing campaigns
+- **Dynamic IVR**: Configure custom IVR flows per campaign with actions
 - **Bulk Call Initiation**: Send automated calls to multiple contacts
 - **Multi-language Support**: English, Spanish, French, German, and Hindi
 - **Twilio Integration**: Handle IVR flows with voice webhooks
@@ -13,16 +15,32 @@ A complete IVR (Interactive Voice Response) calling system with a Go backend API
 - **RESTful API**: Comprehensive API with proper error handling
 
 ### Frontend (React + Vite + TailwindCSS)
+
 - **Interactive Dashboard**: Overview of campaigns and call statistics
 - **Campaign Management**: Full CRUD operations with an intuitive UI
+- **Dynamic IVR Builder**: Visual interface to create IVR menu actions
 - **Bulk Call Interface**: Upload CSV or manually enter contacts
 - **Real-time Monitoring**: Auto-refreshing call status and logs
 - **Call Details**: View complete call timeline with user interactions
 - **Responsive Design**: Works on desktop and mobile devices
 
+### 🎯 Dynamic IVR Features (NEW!)
+
+- **Campaign-based IVR**: Each campaign can have its own custom IVR flow
+- **Intro Text**: Define custom welcome messages for each campaign
+- **Two Action Types**:
+  - **Information**: Play text-to-speech or pre-recorded audio files
+  - **Forward**: Transfer calls to specific phone numbers
+- **Flexible Menu**: Automatically generates IVR menus from configured actions
+- **Easy Configuration**: Simple UI to add/remove actions without coding
+- **Audio Support**: Upload or link to audio files for professional messages
+- **Call Forwarding**: Route calls to sales, support, or any department
+
+📖 **[View Dynamic IVR Guide](DYNAMIC_IVR_GUIDE.md)** | **[Quick Start Example](QUICK_START_EXAMPLE.md)**
+
 ## 📋 Prerequisites
 
-- **Go** 1.23+ 
+- **Go** 1.23+
 - **Node.js** 18+
 - **MongoDB** 4.4+ (local or Atlas)
 - **Twilio Account** (for making calls)
@@ -91,6 +109,7 @@ chmod +x start.sh
 ```
 
 This will:
+
 - Start the backend API on `http://localhost:8080`
 - Start the frontend on `http://localhost:3000`
 - Install frontend dependencies if needed
@@ -98,12 +117,14 @@ This will:
 ### Option 2: Manual Start
 
 **Terminal 1 - Backend:**
+
 ```bash
 cd ivr_api
 go run main.go
 ```
 
 **Terminal 2 - Frontend:**
+
 ```bash
 cd ivr_frontend
 npm run dev
@@ -151,6 +172,7 @@ npm run dev
 ### Dashboard Overview
 
 The dashboard shows:
+
 - Total campaigns and active campaigns
 - Call statistics (total, pending, completed, failed)
 - Success rate percentage
@@ -160,6 +182,7 @@ The dashboard shows:
 ## 📊 API Endpoints
 
 ### Campaigns
+
 - `GET /api/campaigns` - List all campaigns
 - `POST /api/campaigns` - Create campaign
 - `GET /api/campaigns/:id` - Get campaign details
@@ -168,14 +191,17 @@ The dashboard shows:
 - `GET /api/campaigns/:id/calls` - Get campaign calls with stats
 
 ### Calls
+
 - `POST /api/calls/bulk` - Initiate bulk calls
 - `GET /api/calls/:id` - Get call status with logs
 
 ### System
+
 - `GET /api/health` - Health check
 - `GET /api/languages` - Get supported languages
 
 ### Webhooks (Twilio)
+
 - `POST /api/webhook/voice` - Initial call webhook
 - `POST /api/webhook/gather` - Handle user input
 - `POST /api/webhook/status` - Call status updates
