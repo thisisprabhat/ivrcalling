@@ -28,19 +28,22 @@ func (g *TwiMLGenerator) GenerateDynamicWelcome(customerName string, campaign *m
 		greeting = strings.Replace(g.strings.Welcome, "%s, ", "", 1)
 	}
 
-	// Build intro text
-	introText := campaign.IntroText
+	// Build intro text - ensure it's not empty
+	introText := strings.TrimSpace(campaign.IntroText)
 	if introText == "" {
 		introText = g.strings.MainMenu
+		log.Printf("WARNING: Campaign intro_text is empty, using default main menu")
 	}
 
 	// Build menu from actions
 	menuText := g.buildMenuFromActions(campaign.Actions)
 
 	log.Printf("=== GENERATING DYNAMIC WELCOME TwiML ===")
+	log.Printf("Campaign Name: %s", campaign.Name)
 	log.Printf("Greeting: %s", greeting)
 	log.Printf("Intro Text: %s", introText)
 	log.Printf("Menu Text: %s", menuText)
+	log.Printf("★★★ USING DYNAMIC IVR FLOW ★★★")
 
 	return fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
@@ -155,6 +158,12 @@ func (g *TwiMLGenerator) buildMenuFromActions(actions []models.IVRAction) string
 	log.Printf("=== BUILDING MENU FROM %d ACTIONS ===", len(actions))
 	var menuParts []string
 	for i, action := range actions {
+		// Skip actions with empty input keys
+		if strings.TrimSpace(action.ActionInput) == "" {
+			log.Printf("WARNING: Action %d has empty input key, skipping", i+1)
+			continue
+		}
+
 		var actionDesc string
 		log.Printf("Action %d: Type=%s, Input=%s, Message='%s', Phone=%s",
 			i+1, action.ActionType, action.ActionInput, action.Message, action.ForwardPhone)
@@ -177,10 +186,13 @@ func (g *TwiMLGenerator) buildMenuFromActions(actions []models.IVRAction) string
 			} else {
 				words := strings.Fields(message)
 				if len(words) > 0 {
+					// Take first 5 words for the menu description
 					desc := strings.Join(words[:min(5, len(words))], " ")
 					if len(words) > 5 {
 						desc += "..."
 					}
+					// Escape special characters that might confuse TTS
+					desc = strings.ReplaceAll(desc, "%", " percent")
 					actionDesc = fmt.Sprintf("Press %s for %s", action.ActionInput, desc)
 					log.Printf("  → Info action with message: %s", actionDesc)
 				} else {
@@ -210,6 +222,7 @@ func min(a, b int) int {
 
 // GenerateWelcome generates the welcome message TwiML
 func (g *TwiMLGenerator) GenerateWelcome(customerName string) string {
+	log.Printf("★★★ USING LEGACY STATIC IVR FLOW ★★★")
 	greeting := fmt.Sprintf(g.strings.Welcome, customerName)
 	if customerName == "" {
 		greeting = strings.Replace(g.strings.Welcome, "%s, ", "", 1)

@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -68,6 +70,25 @@ func (h *CampaignHandler) CreateCampaign(c *gin.Context) {
 	// Initialize actions array if nil
 	if campaign.Actions == nil {
 		campaign.Actions = []models.IVRAction{}
+	}
+
+	// Validate actions
+	for i, action := range campaign.Actions {
+		if strings.TrimSpace(action.ActionInput) == "" {
+			log.Printf("WARNING: Action %d has empty action_input", i+1)
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Action %d must have a key press (action_input)", i+1)})
+			return
+		}
+		if action.ActionType == "information" && strings.TrimSpace(action.Message) == "" {
+			log.Printf("WARNING: Information action %d has empty message", i+1)
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Information action %d must have a message", i+1)})
+			return
+		}
+		if action.ActionType == "forward" && strings.TrimSpace(action.ForwardPhone) == "" {
+			log.Printf("WARNING: Forward action %d has empty phone number", i+1)
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Forward action %d must have a phone number", i+1)})
+			return
+		}
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
