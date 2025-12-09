@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/prabhatkumar/ivrcalling/config"
 	"github.com/twilio/twilio-go"
@@ -33,6 +34,12 @@ func (s *TwilioService) MakeCall(toNumber string, language string, callID string
 	statusCallbackURL := fmt.Sprintf("%s/api/webhook/status", s.webhookURL)
 	voiceURL := fmt.Sprintf("%s/api/webhook/voice?call_id=%s&language=%s", s.webhookURL, callID, language)
 
+	log.Printf("=== INITIATING TWILIO CALL ===")
+	log.Printf("To: %s", toNumber)
+	log.Printf("From: %s", s.phoneNumber)
+	log.Printf("Voice URL: %s", voiceURL)
+	log.Printf("Status Callback URL: %s", statusCallbackURL)
+
 	params := &twilioApi.CreateCallParams{}
 	params.SetTo(toNumber)
 	params.SetFrom(s.phoneNumber)
@@ -44,9 +51,11 @@ func (s *TwilioService) MakeCall(toNumber string, language string, callID string
 
 	call, err := s.client.Api.CreateCall(params)
 	if err != nil {
+		log.Printf("✗ Twilio call creation failed: %v", err)
 		return nil, fmt.Errorf("failed to create call: %w", err)
 	}
 
+	log.Printf("✓ Twilio call created - SID: %s", *call.Sid)
 	return call, nil
 }
 

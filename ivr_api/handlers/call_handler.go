@@ -36,6 +36,11 @@ func (h *CallHandler) InitiateBulkCalls(c *gin.Context) {
 		return
 	}
 
+	log.Printf("=== BULK CALL REQUEST ===")
+	log.Printf("Campaign ID: %s", request.CampaignID)
+	log.Printf("Language: %s", request.Language)
+	log.Printf("Contact count: %d", len(request.Contacts))
+
 	// Convert campaign ID string to ObjectID
 	campaignObjID, err := primitive.ObjectIDFromHex(request.CampaignID)
 	if err != nil {
@@ -50,9 +55,13 @@ func (h *CallHandler) InitiateBulkCalls(c *gin.Context) {
 	var campaign models.Campaign
 	err = h.db.Collection("campaigns").FindOne(ctx, bson.M{"_id": campaignObjID}).Decode(&campaign)
 	if err != nil {
+		log.Printf("Campaign not found: %v", err)
 		c.JSON(http.StatusNotFound, gin.H{"error": "Campaign not found"})
 		return
 	}
+
+	log.Printf("Campaign found: %s, Active: %v, IntroText: %s, Actions: %d",
+		campaign.Name, campaign.IsActive, campaign.IntroText, len(campaign.Actions))
 
 	if !campaign.IsActive {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Campaign is not active"})
@@ -94,6 +103,8 @@ func (h *CallHandler) InitiateBulkCalls(c *gin.Context) {
 		call.ID = result.InsertedID.(primitive.ObjectID)
 		callIDs = append(callIDs, call.ID.Hex())
 
+		log.Printf("Call record created - ID: %s, Phone: %s, Name: %s", call.ID.Hex(), contact.PhoneNumber, contact.Name)
+
 		// Initiate Twilio call
 		twilioCall, err := h.twilioService.MakeCall(contact.PhoneNumber, language, call.ID.Hex())
 		if err != nil {
@@ -128,6 +139,8 @@ func (h *CallHandler) InitiateBulkCalls(c *gin.Context) {
 			}},
 		)
 		updateCancel()
+
+		log.Printf("✓ Call initiated successfully - SID: %s", *twilioCall.Sid)
 
 		// Create call log
 		callLog := models.CallLog{

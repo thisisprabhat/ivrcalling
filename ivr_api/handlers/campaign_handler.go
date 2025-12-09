@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"time"
 
@@ -26,6 +27,17 @@ func (h *CampaignHandler) CreateCampaign(c *gin.Context) {
 	if err := c.ShouldBindJSON(&campaign); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	log.Printf("=== CREATING CAMPAIGN ===")
+	log.Printf("Name: %s", campaign.Name)
+	log.Printf("Description: %s", campaign.Description)
+	log.Printf("Language: %s", campaign.Language)
+	log.Printf("IntroText: %s", campaign.IntroText)
+	log.Printf("Actions count: %d", len(campaign.Actions))
+	for i, action := range campaign.Actions {
+		log.Printf("  Action %d: Type=%s, Input=%s, Message=%s, Phone=%s",
+			i+1, action.ActionType, action.ActionInput, action.Message, action.ForwardPhone)
 	}
 
 	// Validate required fields
@@ -63,11 +75,13 @@ func (h *CampaignHandler) CreateCampaign(c *gin.Context) {
 
 	result, err := h.db.Collection("campaigns").InsertOne(ctx, campaign)
 	if err != nil {
+		log.Printf("Failed to insert campaign into database: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create campaign"})
 		return
 	}
 
 	campaign.ID = result.InsertedID.(primitive.ObjectID)
+	log.Printf("✓ Campaign created successfully with ID: %s", campaign.ID.Hex())
 	c.JSON(http.StatusCreated, campaign)
 }
 

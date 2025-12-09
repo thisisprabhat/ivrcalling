@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/prabhatkumar/ivrcalling/models"
@@ -36,6 +37,11 @@ func (g *TwiMLGenerator) GenerateDynamicWelcome(customerName string, campaign *m
 	// Build menu from actions
 	menuText := g.buildMenuFromActions(campaign.Actions)
 
+	log.Printf("=== GENERATING DYNAMIC WELCOME TwiML ===")
+	log.Printf("Greeting: %s", greeting)
+	log.Printf("Intro Text: %s", introText)
+	log.Printf("Menu Text: %s", menuText)
+
 	return fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
     <Say voice="alice" language="%s">%s</Say>
@@ -54,6 +60,11 @@ func (g *TwiMLGenerator) GenerateDynamicWelcome(customerName string, campaign *m
 
 // GenerateDynamicResponse generates TwiML based on action configuration
 func (g *TwiMLGenerator) GenerateDynamicResponse(action *models.IVRAction, campaign *models.Campaign) string {
+	log.Printf("=== GENERATING DYNAMIC RESPONSE ===")
+	log.Printf("Action Type: %s", action.ActionType)
+	log.Printf("Message: %s", action.Message)
+	log.Printf("Forward Phone: %s", action.ForwardPhone)
+
 	if action.ActionType == "forward" {
 		return g.GenerateForward(action.ForwardPhone, action.Message)
 	}
@@ -66,10 +77,12 @@ func (g *TwiMLGenerator) GenerateDynamicResponse(action *models.IVRAction, campa
 
 	// Check if message is a URL (starts with http:// or https://)
 	if strings.HasPrefix(message, "http://") || strings.HasPrefix(message, "https://") {
+		log.Printf("Message is URL - playing audio")
 		return g.GeneratePlayAudio(message, campaign)
 	}
 
 	// Otherwise, use text-to-speech
+	log.Printf("Message is text - using TTS")
 	return g.GenerateTextToSpeech(message, campaign)
 }
 
@@ -143,7 +156,12 @@ func (g *TwiMLGenerator) buildMenuFromActions(actions []models.IVRAction) string
 	for _, action := range actions {
 		var actionDesc string
 		if action.ActionType == "forward" {
-			actionDesc = fmt.Sprintf("Press %s to speak with an agent", action.ActionInput)
+			// Use custom message if provided, otherwise use default
+			if action.Message != "" {
+				actionDesc = fmt.Sprintf("Press %s to %s", action.ActionInput, action.Message)
+			} else {
+				actionDesc = fmt.Sprintf("Press %s to speak with an agent", action.ActionInput)
+			}
 		} else {
 			// Use first few words of message as description
 			words := strings.Fields(action.Message)
