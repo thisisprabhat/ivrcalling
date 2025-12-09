@@ -152,27 +152,41 @@ func (g *TwiMLGenerator) buildMenuFromActions(actions []models.IVRAction) string
 		return "Press 0 to hear this message again"
 	}
 
+	log.Printf("=== BUILDING MENU FROM %d ACTIONS ===", len(actions))
 	var menuParts []string
-	for _, action := range actions {
+	for i, action := range actions {
 		var actionDesc string
+		log.Printf("Action %d: Type=%s, Input=%s, Message='%s', Phone=%s", 
+			i+1, action.ActionType, action.ActionInput, action.Message, action.ForwardPhone)
+		
 		if action.ActionType == "forward" {
 			// Use custom message if provided, otherwise use default
-			if action.Message != "" {
-				actionDesc = fmt.Sprintf("Press %s to %s", action.ActionInput, action.Message)
+			if action.Message != "" && strings.TrimSpace(action.Message) != "" {
+				actionDesc = fmt.Sprintf("Press %s to %s", action.ActionInput, strings.TrimSpace(action.Message))
+				log.Printf("  → Forward with custom message: %s", actionDesc)
 			} else {
 				actionDesc = fmt.Sprintf("Press %s to speak with an agent", action.ActionInput)
+				log.Printf("  → Forward with default message: %s", actionDesc)
 			}
 		} else {
-			// Use first few words of message as description
-			words := strings.Fields(action.Message)
-			if len(words) > 0 {
-				desc := strings.Join(words[:min(5, len(words))], " ")
-				if len(words) > 5 {
-					desc += "..."
-				}
-				actionDesc = fmt.Sprintf("Press %s for %s", action.ActionInput, desc)
-			} else {
+			// Information action - use first few words of message as description
+			message := strings.TrimSpace(action.Message)
+			if message == "" {
 				actionDesc = fmt.Sprintf("Press %s for more information", action.ActionInput)
+				log.Printf("  → Info action with no message, using default: %s", actionDesc)
+			} else {
+				words := strings.Fields(message)
+				if len(words) > 0 {
+					desc := strings.Join(words[:min(5, len(words))], " ")
+					if len(words) > 5 {
+						desc += "..."
+					}
+					actionDesc = fmt.Sprintf("Press %s for %s", action.ActionInput, desc)
+					log.Printf("  → Info action with message: %s", actionDesc)
+				} else {
+					actionDesc = fmt.Sprintf("Press %s for more information", action.ActionInput)
+					log.Printf("  → Info action with empty message after trim: %s", actionDesc)
+				}
 			}
 		}
 		menuParts = append(menuParts, actionDesc)
@@ -181,7 +195,9 @@ func (g *TwiMLGenerator) buildMenuFromActions(actions []models.IVRAction) string
 	// Add option to return to main menu or repeat
 	menuParts = append(menuParts, "Press 0 to repeat this menu")
 
-	return strings.Join(menuParts, ". ")
+	finalMenu := strings.Join(menuParts, ". ")
+	log.Printf("=== FINAL MENU TEXT: %s ===", finalMenu)
+	return finalMenu
 }
 
 // Helper function to get minimum of two integers
