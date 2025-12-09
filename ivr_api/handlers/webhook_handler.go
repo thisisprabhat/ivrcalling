@@ -60,7 +60,7 @@ func (h *WebhookHandler) HandleVoiceWebhook(c *gin.Context) {
 						useDynamicIVR = true
 						log.Printf("✓ USING DYNAMIC IVR - Campaign: %s", campaign.Name)
 						for i, action := range campaign.Actions {
-							log.Printf("  Action %d: Type=%s, Input=%s, Message=%s, Phone=%s", 
+							log.Printf("  Action %d: Type=%s, Input=%s, Message=%s, Phone=%s",
 								i+1, action.ActionType, action.ActionInput, action.Message, action.ForwardPhone)
 						}
 					} else {
@@ -162,7 +162,7 @@ func (h *WebhookHandler) HandleGatherWebhook(c *gin.Context) {
 				log.Printf("Checking action %d: input='%s' vs pressed='%s'", i, campaign.Actions[i].ActionInput, input.Digits)
 				if campaign.Actions[i].ActionInput == input.Digits {
 					matchedAction = &campaign.Actions[i]
-					log.Printf("✓ MATCHED ACTION: Type=%s, Message=%s, Phone=%s", 
+					log.Printf("✓ MATCHED ACTION: Type=%s, Message=%s, Phone=%s",
 						matchedAction.ActionType, matchedAction.Message, matchedAction.ForwardPhone)
 					break
 				}
