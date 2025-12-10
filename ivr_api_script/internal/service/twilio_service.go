@@ -143,11 +143,11 @@ func (s *TwilioService) GenerateWelcomeTwiML() string {
 
 	twiml := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say voice="alice">%s</Say>
+    <Say voice="Polly.Aditi" language="en-IN">%s</Say>
     <Gather numDigits="1" action="%s/api/v1/twiml/handle-input" method="POST" timeout="10">
-        <Say voice="alice">%s</Say>
+        <Say voice="Polly.Aditi" language="en-IN">%s</Say>
     </Gather>
-    <Say voice="alice">We did not receive any input. Goodbye!</Say>
+    <Say voice="Polly.Aditi" language="en-IN">We did not receive any input. Goodbye!</Say>
 </Response>`,
 		html.EscapeString(s.ivrConfig.IntroText),
 		html.EscapeString(s.config.ServerBaseURL),
@@ -166,9 +166,11 @@ func (s *TwilioService) GenerateHandleInputTwiML(digit string) string {
 				// Forward the call to Q&I team
 				return fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say voice="alice">Connecting you to the Q and I team. Please wait.</Say>
-    <Dial callerId="%s">%s</Dial>
-    <Say voice="alice">The call could not be completed. %s</Say>
+    <Say voice="Polly.Aditi" language="en-IN">Connecting you to the Q and I team. Please wait.</Say>
+    <Dial timeout="30" callerId="%s">
+        <Number>%s</Number>
+    </Dial>
+    <Say voice="Polly.Aditi" language="en-IN">Sorry, we could not connect your call at this time. This may be because the number is not verified on our trial account. Please try again later or contact us directly. %s</Say>
 </Response>`,
 					s.config.TwilioPhoneNumber,
 					action.ForwardTo,
@@ -179,8 +181,8 @@ func (s *TwilioService) GenerateHandleInputTwiML(digit string) string {
 				// Provide information
 				return fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say voice="alice">%s</Say>
-    <Say voice="alice">%s</Say>
+    <Say voice="Polly.Aditi" language="en-IN">%s</Say>
+    <Say voice="Polly.Aditi" language="en-IN">%s</Say>
 </Response>`,
 					html.EscapeString(action.Description),
 					html.EscapeString(s.ivrConfig.EndMessage),
@@ -196,7 +198,7 @@ func (s *TwilioService) GenerateHandleInputTwiML(digit string) string {
 	// Invalid input
 	return fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say voice="alice">Invalid input. %s</Say>
+    <Say voice="Polly.Aditi" language="en-IN">Invalid input. %s</Say>
 </Response>`, html.EscapeString(s.ivrConfig.EndMessage))
 }
 
