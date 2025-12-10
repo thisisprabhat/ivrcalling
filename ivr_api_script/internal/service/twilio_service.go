@@ -167,10 +167,11 @@ func (s *TwilioService) GenerateHandleInputTwiML(digit string) string {
 				return fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
     <Say voice="alice">Connecting you to the Q and I team. Please wait.</Say>
-    <Dial>%s</Dial>
-    <Say voice="alice">%s</Say>
+    <Dial callerId="%s">%s</Dial>
+    <Say voice="alice">The call could not be completed. %s</Say>
 </Response>`,
-					html.EscapeString(action.ForwardTo),
+					s.config.TwilioPhoneNumber,
+					action.ForwardTo,
 					html.EscapeString(s.ivrConfig.EndMessage),
 				)
 
