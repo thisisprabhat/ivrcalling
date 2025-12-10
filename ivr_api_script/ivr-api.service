@@ -1,0 +1,27 @@
+[Unit]
+Description=IVR Calling API Service
+After=network.target
+
+[Service]
+Type=simple
+User=prabhat_qanditoday1
+Group=prabhat_qanditoday1
+WorkingDirectory=/home/prabhat_qanditoday1/ivrcalling/ivr_api_script
+ExecStart=/home/prabhat_qanditoday1/ivrcalling/ivr_api_script/bin/ivr-api
+Restart=always
+RestartSec=5
+
+# Environment
+Environment="GIN_MODE=release"
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ivr-api
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

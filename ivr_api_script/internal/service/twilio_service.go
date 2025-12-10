@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"net/url"
@@ -134,20 +135,24 @@ func (s *TwilioService) GetIVRConfig() models.IVRConfig {
 
 // GenerateWelcomeTwiML generates TwiML for the welcome message
 func (s *TwilioService) GenerateWelcomeTwiML() string {
-	twiml := `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-    <Say voice="alice">` + s.ivrConfig.IntroText + `</Say>
-    <Gather numDigits="1" action="` + s.config.ServerBaseURL + `/api/v1/twiml/handle-input" method="POST" timeout="10">
-        <Say voice="alice">`
-
+	// Build the menu options
+	var menuOptions string
 	for _, action := range s.ivrConfig.Actions {
-		twiml += action.Message + ". "
+		menuOptions += html.EscapeString(action.Message) + ". "
 	}
 
-	twiml += `</Say>
+	twiml := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Say voice="alice">%s</Say>
+    <Gather numDigits="1" action="%s/api/v1/twiml/handle-input" method="POST" timeout="10">
+        <Say voice="alice">%s</Say>
     </Gather>
     <Say voice="alice">We did not receive any input. Goodbye!</Say>
-</Response>`
+</Response>`,
+		html.EscapeString(s.ivrConfig.IntroText),
+		html.EscapeString(s.config.ServerBaseURL),
+		menuOptions,
+	)
 
 	return twiml
 }
@@ -164,7 +169,10 @@ func (s *TwilioService) GenerateHandleInputTwiML(digit string) string {
     <Say voice="alice">Connecting you to the Q and I team. Please wait.</Say>
     <Dial>%s</Dial>
     <Say voice="alice">%s</Say>
-</Response>`, action.ForwardTo, s.ivrConfig.EndMessage)
+</Response>`,
+					html.EscapeString(action.ForwardTo),
+					html.EscapeString(s.ivrConfig.EndMessage),
+				)
 
 			case "inform":
 				// Provide information
@@ -172,7 +180,10 @@ func (s *TwilioService) GenerateHandleInputTwiML(digit string) string {
 <Response>
     <Say voice="alice">%s</Say>
     <Say voice="alice">%s</Say>
-</Response>`, action.Description, s.ivrConfig.EndMessage)
+</Response>`,
+					html.EscapeString(action.Description),
+					html.EscapeString(s.ivrConfig.EndMessage),
+				)
 
 			case "repeat":
 				// Repeat the welcome message
@@ -185,7 +196,7 @@ func (s *TwilioService) GenerateHandleInputTwiML(digit string) string {
 	return fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
     <Say voice="alice">Invalid input. %s</Say>
-</Response>`, s.ivrConfig.EndMessage)
+</Response>`, html.EscapeString(s.ivrConfig.EndMessage))
 }
 
 // handleDigitInput processes digit input from the caller

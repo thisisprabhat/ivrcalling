@@ -19,11 +19,7 @@ type IVRAction struct {
 // GetIVRConfig returns the configured IVR flow for Q&I
 func GetIVRConfig() IVRConfig {
 	return IVRConfig{
-		IntroText: "Welcome to Q&I! We are transforming education with smart digital tools. " +
-			"We help your school digitize teaching and measure true student understanding. " +
-			"Our AI-powered platform provides topic analysis and targeted practice to boost academic performance. " +
-			"With Q&I, teachers get deeper insights, students learn effectively, and your institution achieves measurable growth. " +
-			"Ready to see how Q&I can revolutionize your classrooms?",
+		IntroText: "Welcome to Q and I Educational Platform. We transform education with AI-powered digital tools for schools.",
 		Actions: []IVRAction{
 			{
 				Key:       "1",
