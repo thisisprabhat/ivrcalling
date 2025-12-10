@@ -1,0 +1,116 @@
+# Caddyfile for ivr.waygosquad.com
+# Caddy automatically handles HTTPS with Let's Encrypt
+
+# Main site configuration
+ivr.waygosquad.com {
+    # Automatic HTTPS with Let's Encrypt
+    # Caddy will automatically obtain and renew certificates
+
+    # Logging
+    log {
+        output file /var/log/caddy/ivr.waygosquad.com.log {
+            roll_size 100mb
+            roll_keep 10
+            roll_keep_for 720h
+        }
+        format json
+        level INFO
+    }
+
+    # Security headers
+    header {
+        # Enable HSTS
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Prevent clickjacking
+        X-Frame-Options "SAMEORIGIN"
+        # Prevent MIME sniffing
+        X-Content-Type-Options "nosniff"
+        # XSS Protection
+        X-XSS-Protection "1; mode=block"
+        # Referrer Policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Remove Server header
+        -Server
+    }
+
+    # Reverse proxy to Go API running on localhost:8080
+    reverse_proxy localhost:8080 {
+        # Health check
+        health_uri /health
+        health_interval 10s
+        health_timeout 5s
+        health_status 2xx
+
+        # Headers
+        header_up Host { host }
+        header_up X-Real-IP { remote_host }
+        header_up X-Forwarded-For { remote_host }
+        header_up X-Forwarded-Proto { scheme }
+        header_up X-Forwarded-Host { host }
+    }
+
+    # CORS configuration for API endpoints
+    @api_cors {
+        path /api/*
+        method OPTIONS
+    }
+    respond @api_cors 204
+
+    # Additional headers for API endpoints
+    @api {
+        path /api/*
+    }
+    header @api {
+        Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "Authorization, Content-Type"
+    }
+
+    # Twilio webhook endpoints - ensure HTTPS
+    @twiml {
+        path /twiml/*
+    }
+    header @twiml {
+        X-Forwarded-Proto "https"
+    }
+
+    # Gzip compression
+    encode gzip zstd
+
+    # Request size limit (10MB)
+    request_body {
+        max_size 10MB
+    }
+}
+
+# Alternative configuration with rate limiting
+# Uncomment and modify if you need rate limiting
+
+# ivr.waygosquad.com {
+#     # Rate limiting
+#     rate_limit {
+#         zone dynamic {
+#             key {remote_host}
+#             events 100
+#             window 1m
+#         }
+#         
+#         # API endpoints - 10 requests per second
+#         @api_limit {
+#             path /api/*
+#         }
+#         rate_limit @api_limit {
+#             zone dynamic
+#             events 10
+#             window 1s
+#         }
+#     }
+# 
+#     # ... rest of configuration
+# }
+
+# HTTP to HTTPS redirect (Caddy does this automatically)
+# If you need custom redirect behavior:
+# http://ivr.waygosquad.com {
+#     redir https://ivr.waygosquad.com{uri} permanent
+# }

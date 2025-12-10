@@ -1,0 +1,54 @@
+# .dockerignore - Optimize Docker build
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+docs/
+examples/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Build artifacts
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test files
+*_test.go
+*.test
+coverage.out
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Node modules (if any)
+node_modules/
+
+# Logs
+*.log
+logs/
+
+# Scripts
+*.ps1
+*.sh
+*.bat
